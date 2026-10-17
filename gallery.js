@@ -1,4 +1,4 @@
-// Generate 22 foto gallery
+// ============ GENERATE 22 FOTO GALLERY ============
 const galleryGrid = document.getElementById('galleryGrid');
 const photoTitles = [
     "Momen Kebersamaan", "Tawa Ceria", "Belajar Bersama", "Istirahat Santai",
@@ -9,16 +9,18 @@ const photoTitles = [
     "Kenangan Abadi", "Selamanya 9I"
 ];
 
-for (let i = 1; i <= 22; i++) {
-    const item = document.createElement('div');
-    item.className = 'gallery-item';
-    item.innerHTML = `
-        <img src="assets/photos/foto${i}.jpg" alt="${photoTitles[i-1]}" loading="lazy" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%2314141f%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2255%22 font-size=%2214%22 fill=%22%23a855f7%22 text-anchor=%22middle%22>Foto ${i}</text></svg>'">
-    `;
-    galleryGrid.appendChild(item);
+if (galleryGrid) {
+    for (let i = 1; i <= 22; i++) {
+        const item = document.createElement('div');
+        item.className = 'gallery-item';
+        item.innerHTML = `
+            <img src="assets/photos/foto${i}.jpg" alt="${photoTitles[i-1]}" loading="lazy" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%2314141f%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2255%22 font-size=%2214%22 fill=%22%23a855f7%22 text-anchor=%22middle%22>Foto ${i}</text></svg>'">
+        `;
+        galleryGrid.appendChild(item);
+    }
 }
 
-// Reveal animation
+// ============ REVEAL ANIMATION ============
 const items = document.querySelectorAll('.gallery-item');
 const io = new IntersectionObserver((entries) => {
     entries.forEach((entry, idx) => {
@@ -30,7 +32,7 @@ const io = new IntersectionObserver((entries) => {
 }, { threshold: 0.1 });
 items.forEach(item => io.observe(item));
 
-// Lightbox
+// ============ LIGHTBOX (POP-UP FOTO) ============
 const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightboxImg');
 const lightboxCounter = document.getElementById('lightboxCounter');
@@ -63,30 +65,88 @@ items.forEach((item, idx) => {
     item.addEventListener('click', () => openLightbox(idx));
 });
 
-document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
-document.getElementById('lightboxNext').addEventListener('click', (e) => { e.stopPropagation(); showNext(); });
-document.getElementById('lightboxPrev').addEventListener('click', (e) => { e.stopPropagation(); showPrev(); });
+if (document.getElementById('lightboxClose')) {
+    document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+    document.getElementById('lightboxNext').addEventListener('click', (e) => { e.stopPropagation(); showNext(); });
+    document.getElementById('lightboxPrev').addEventListener('click', (e) => { e.stopPropagation(); showPrev(); });
 
-lightbox.addEventListener('click', (e) => {
-    if (e.target === lightbox) closeLightbox();
-});
+    lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox) closeLightbox();
+    });
 
-document.addEventListener('keydown', (e) => {
-    if (!lightbox.classList.contains('active')) return;
-    if (e.key === 'Escape') closeLightbox();
-    if (e.key === 'ArrowRight') showNext();
-    if (e.key === 'ArrowLeft') showPrev();
-});
-
-// Particles
-const particlesContainer = document.getElementById('particles');
-for (let i = 0; i < 40; i++) {
-    const p = document.createElement('div');
-    p.className = 'particle';
-    p.style.left = Math.random() * 100 + '%';
-    p.style.animationDuration = (Math.random() * 15 + 10) + 's';
-    p.style.animationDelay = Math.random() * 10 + 's';
-    p.style.background = Math.random() > 0.5 ? '#a855f7' : '#ec4899';
-    p.style.width = p.style.height = (Math.random() * 3 + 2) + 'px';
-    particlesContainer.appendChild(p);
+    document.addEventListener('keydown', (e) => {
+        if (!lightbox.classList.contains('active')) return;
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowRight') showNext();
+        if (e.key === 'ArrowLeft') showPrev();
+    });
 }
+
+// ============ PARTICLES ============
+const particlesContainer = document.getElementById('particles');
+if (particlesContainer) {
+    for (let i = 0; i < 40; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.animationDuration = (Math.random() * 15 + 10) + 's';
+        p.style.animationDelay = Math.random() * 10 + 's';
+        p.style.background = Math.random() > 0.5 ? '#a855f7' : '#ec4899';
+        p.style.width = p.style.height = (Math.random() * 3 + 2) + 'px';
+        particlesContainer.appendChild(p);
+    }
+}
+
+// ============ BACKSOUND (AUTO-PLAY ON INTERACTION) ============
+const backsound = document.getElementById('backsound');
+const musicToggle = document.getElementById('musicToggle');
+const isMusicOff = localStorage.getItem('musicOff') === 'true';
+
+if (backsound) {
+    backsound.volume = 0.5;
+    
+    // Coba putar langsung
+    if (!isMusicOff) {
+        backsound.play().then(() => {
+            if(musicToggle) musicToggle.classList.add('playing');
+        }).catch(() => {
+            if(musicToggle) musicToggle.classList.remove('playing');
+        });
+    }
+
+    // Fungsi memutar musik saat ada interaksi
+    const playOnInteract = () => {
+        if (backsound.paused && !isMusicOff) {
+            backsound.play().then(() => {
+                if(musicToggle) musicToggle.classList.add('playing');
+            }).catch(e => console.log("Gagal play:", e));
+        }
+        document.removeEventListener('click', playOnInteract);
+        document.removeEventListener('scroll', playOnInteract);
+        document.removeEventListener('touchstart', playOnInteract);
+        document.removeEventListener('keydown', playOnInteract);
+    };
+
+    document.addEventListener('click', playOnInteract);
+    document.addEventListener('scroll', playOnInteract);
+    document.addEventListener('touchstart', playOnInteract);
+    document.addEventListener('keydown', playOnInteract);
+
+    // Tombol Toggle Musik Manual
+    if (musicToggle) {
+        musicToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (backsound.paused) {
+                backsound.play();
+                musicToggle.classList.add('playing');
+                localStorage.setItem('musicOff', 'false');
+            } else {
+                backsound.pause();
+                musicToggle.classList.remove('playing');
+                localStorage.setItem('musicOff', 'true');
+            }
+        });
+        
+        if(!backsound.paused) musicToggle.classList.add('playing');
+    }
+    }
