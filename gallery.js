@@ -32,7 +32,7 @@ const io = new IntersectionObserver((entries) => {
 }, { threshold: 0.1 });
 items.forEach(item => io.observe(item));
 
-// ============ LIGHTBOX (POP-UP FOTO) ============
+// ============ LIGHTBOX ============
 const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightboxImg');
 const lightboxCounter = document.getElementById('lightboxCounter');
@@ -97,7 +97,7 @@ if (particlesContainer) {
     }
 }
 
-// ============ BACKSOUND (AUTO-PLAY ON INTERACTION) ============
+// ============ BACKSOUND (MODE DIAM, NYALA SAAT KLIK) ============
 const backsound = document.getElementById('backsound');
 const musicToggle = document.getElementById('musicToggle');
 const isMusicOff = localStorage.getItem('musicOff') === 'true';
@@ -105,34 +105,23 @@ const isMusicOff = localStorage.getItem('musicOff') === 'true';
 if (backsound) {
     backsound.volume = 0.5;
     
-    // Coba putar langsung
-    if (!isMusicOff) {
-        backsound.play().then(() => {
-            if(musicToggle) musicToggle.classList.add('playing');
-        }).catch(() => {
-            if(musicToggle) musicToggle.classList.remove('playing');
-        });
-    }
+    if(musicToggle) musicToggle.classList.remove('playing');
 
-    // Fungsi memutar musik saat ada interaksi
-    const playOnInteract = () => {
+    const playOnClick = (e) => {
+        if (e.target === musicToggle || (musicToggle && musicToggle.contains(e.target))) {
+            return; 
+        }
+
         if (backsound.paused && !isMusicOff) {
             backsound.play().then(() => {
                 if(musicToggle) musicToggle.classList.add('playing');
-            }).catch(e => console.log("Gagal play:", e));
+            }).catch(err => console.log("Gagal play:", err));
         }
-        document.removeEventListener('click', playOnInteract);
-        document.removeEventListener('scroll', playOnInteract);
-        document.removeEventListener('touchstart', playOnInteract);
-        document.removeEventListener('keydown', playOnInteract);
+        document.removeEventListener('click', playOnClick);
     };
 
-    document.addEventListener('click', playOnInteract);
-    document.addEventListener('scroll', playOnInteract);
-    document.addEventListener('touchstart', playOnInteract);
-    document.addEventListener('keydown', playOnInteract);
+    document.addEventListener('click', playOnClick);
 
-    // Tombol Toggle Musik Manual
     if (musicToggle) {
         musicToggle.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -146,7 +135,5 @@ if (backsound) {
                 localStorage.setItem('musicOff', 'true');
             }
         });
-        
-        if(!backsound.paused) musicToggle.classList.add('playing');
     }
-    }
+}
