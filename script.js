@@ -72,14 +72,12 @@ const observer = new IntersectionObserver((entries) => {
         if (entry.isIntersecting) {
             entry.target.classList.add('active');
             
-            // Animate Skill Bars
             if (entry.target.classList.contains('skills-grid')) {
                 entry.target.querySelectorAll('.skill-fill').forEach(fill => {
                     fill.style.width = fill.dataset.width + '%';
                 });
             }
             
-            // Animate Counters
             if (entry.target.classList.contains('stats-grid')) {
                 entry.target.querySelectorAll('.stat-number').forEach(num => {
                     if (!num.dataset.animated) {
@@ -111,8 +109,7 @@ if (videoGrid) {
     for (let i = 1; i <= 6; i++) {
         const card = document.createElement('div');
         card.className = 'video-card reveal';
-        
-        // PERUBAHAN: Atribut poster dihapus agar tampilan awal hitam bersih
+        // Poster dihapus agar video tampil hitam sebelum diputar
         card.innerHTML = `
             <video controls preload="metadata">
                 <source src="assets/videos/video${i}.mp4" type="video/mp4">
@@ -142,7 +139,7 @@ if (particlesContainer) {
     }
 }
 
-// ============ BACKSOUND (AUTO-PLAY ON INTERACTION) ============
+// ============ BACKSOUND (MODE DIAM, NYALA SAAT KLIK) ============
 const backsound = document.getElementById('backsound');
 const musicToggle = document.getElementById('musicToggle');
 const isMusicOff = localStorage.getItem('musicOff') === 'true';
@@ -150,35 +147,28 @@ const isMusicOff = localStorage.getItem('musicOff') === 'true';
 if (backsound) {
     backsound.volume = 0.5;
     
-    // Coba putar langsung saat halaman dimuat
-    if (!isMusicOff) {
-        backsound.play().then(() => {
-            if(musicToggle) musicToggle.classList.add('playing');
-        }).catch(() => {
-            // Browser memblokir (normal), tunggu interaksi user
-            if(musicToggle) musicToggle.classList.remove('playing');
-        });
-    }
+    // Pastikan ikon musik mati saat pertama kali dimuat
+    if(musicToggle) musicToggle.classList.remove('playing');
 
-    // Fungsi memutar musik saat ada interaksi (scroll/klik)
-    const playOnInteract = () => {
+    // Fungsi untuk menyalakan musik saat layar diklik di mana saja
+    const playOnClick = (e) => {
+        // Abaikan jika yang diklik adalah tombol musik
+        if (e.target === musicToggle || (musicToggle && musicToggle.contains(e.target))) {
+            return; 
+        }
+
+        // Nyalakan jika sebelumnya tidak dimatikan manual
         if (backsound.paused && !isMusicOff) {
             backsound.play().then(() => {
                 if(musicToggle) musicToggle.classList.add('playing');
-            }).catch(e => console.log("Gagal play:", e));
+            }).catch(err => console.log("Gagal play:", err));
         }
-        // Hapus event setelah musik berhasil diputar agar tidak membebani browser
-        document.removeEventListener('click', playOnInteract);
-        document.removeEventListener('scroll', playOnInteract);
-        document.removeEventListener('touchstart', playOnInteract);
-        document.removeEventListener('keydown', playOnInteract);
+        
+        // Hapus event setelah diklik sekali
+        document.removeEventListener('click', playOnClick);
     };
 
-    // Daftarkan event listener
-    document.addEventListener('click', playOnInteract);
-    document.addEventListener('scroll', playOnInteract);
-    document.addEventListener('touchstart', playOnInteract);
-    document.addEventListener('keydown', playOnInteract);
+    document.addEventListener('click', playOnClick);
 
     // Tombol Toggle Musik Manual
     if (musicToggle) {
@@ -194,7 +184,5 @@ if (backsound) {
                 localStorage.setItem('musicOff', 'true');
             }
         });
-        
-        if(!backsound.paused) musicToggle.classList.add('playing');
     }
 }
